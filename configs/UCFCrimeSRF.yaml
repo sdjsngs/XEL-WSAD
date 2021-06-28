@@ -1,0 +1,50 @@
+# yaml file for UCFCrime Feature
+# include I3d or C3d feature
+#UCFCrimeSRF.yaml for self-reasoning  paper
+
+TRAIN:
+  ENABLE: True
+  DATASET: Ucf_Crime_Feature_SRF
+  BATCH_SIZE: 1
+  CHECKPOINT_PERIOD: 25 # save model in each 100 iteration
+
+UCF_CRIME_FEATURE:
+  PATH_TO_DATA_DIR: E:/datasets/UCF_C3D_Features_Npy
+  TEST_MODE: test_merged_l2norm
+  # test_merged_l2norm test_unmerged_l2norm
+SOLVER:
+  BASE_LR: 0.00005 #0.001
+  LR_POLICY: keep
+#  MAX_EPOCH: 50
+  MOMENTUM: 0.9
+  WEIGHT_DECAY: 0.00005
+  OPTIMIZING_METHOD: adam #adam
+  LOSS_FUNC: SRF_LOSS_COMBINE #
+#  STEP_EPOCHS: [10,30]
+  MAX_ITERATION: 100000 # 100k  iteration
+  STEP_ITERATIONS: [4000,8000]
+
+MODEL:
+  MODEL_NAME: SRF_FC #FC_3_layer
+
+TEST:
+  ENABLE: True
+  DATASET: Ucf_Crime_Feature_SRF
+  BATCH_SIZE: 1
+  SAVE_NPY_PATH: E:/letter-experiment-SRF/UCF_Crime/origin/
+
+DATA_LOADER:
+  NUM_WORKERS: 4
+  PIN_MEMORY: True
+MEMORY_BANK:
+  BANK_SIZE: 800
+
+#TENSORBOARD:
+#  PATH: E:/letter-experiment/origin
+
+NUM_GPUS: 1
+TRAIN_LOGFILE_NAME: train.log
+TEST_LOGFILE_NAME: test.log
+AUC_LOGFILE_NAME: AUC.log
+OUTPUT_DIR: E:/letter-experiment-SRF/UCF_Crime/origin
+

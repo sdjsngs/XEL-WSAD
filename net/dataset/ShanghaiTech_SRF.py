@@ -1,0 +1,201 @@
+"""
+shanghai tech
+
+two branch ['Normal' ,'Abnormal' ]
+unmerged video feature
+for self-reason framwork
+
+    437 videos in resolution 480x856
+    data augment anomalousX3
+    train 175 normal + 63 anomalous
+    train 175 normal + 189 anomalous
+
+    test 155 normal + 44 anomalous
+
+
+"""
+import torch
+import  torch.nn as nn
+from torch.utils.data import  Dataset,DataLoader
+import os
+import glob
+import cv2
+import numpy as np
+from PIL import Image
+
+
+import joblib
+from net.utils.parser import parse_args,load_config
+#
+from .build import DATASET_REGISTRY
+@DATASET_REGISTRY.register()
+class SH_SRF(Dataset):
+    """
+    437 videos in resolution 480x856
+
+    train 175 normal + 63 anomalous
+    train 175 normal + 189 anomalous in MIL
+
+    test 155 normal + 44 anomalous
+
+    """
+    def __init__(self,mode,cfg,):
+        assert mode in ["train","test"]
+        self.video_root=r"E:\datasets\shanghaitech_C3D_Feature\split_npy"
+        #cfg.UCF_CRIME_FEATURE.PATH_TO_DATA_DIR
+
+        self.cfg=cfg
+        self.mode=mode
+        self.two_class=['Normal' ,'Abnormal' ]
+        self.single_feature_len=4096
+
+        self.normal_feature_paths = []
+        self.abnormal_feature_paths = []
+
+        self.test_feature_paths=[]
+
+        self._consturct()
+        # self._construct_video()
+
+        self.normal_feature_num=len(self.normal_feature_paths)
+        self.abnormal_feature_num = len(self.abnormal_feature_paths)
+        self.test_feature_num=len(self.test_feature_paths)
+
+        # load  features
+        # self._load_all_npy()
+
+        # print()
+
+    def _consturct(self):
+        """
+        Training-Normal-Videos-segment
+        Training-Abnormal-Videos-segment
+        laod feature
+
+        :return:
+        """
+
+        self.normal_feature_paths=glob.glob(
+                        os.path.join(
+                            self.video_root, self.mode, "Normal", "*.npy"
+                        )
+                )
+
+
+
+        self.abnormal_feature_paths=glob.glob(
+                        os.path.join(
+                            self.video_root, self.mode, "Abnormal", "*.npy"
+                        )
+                )
+        if self.mode in ["train"]:
+            self.abnormal_feature_paths=self.abnormal_feature_paths*3
+
+
+        # if self.mode in ["train"]:
+        #     self.test_feature_paths = self.normal_feature_paths + self.abnormal_feature_paths*3
+        # # if self.mode in ["test"]:
+        # else:
+        self.test_feature_paths=self.normal_feature_paths+self.abnormal_feature_paths
+
+    def _load_all_npy(self):
+        """
+        load all npy
+        :return:
+        """
+        # self.normal_npy=np.zeros(shape=[self.normal_feature_num,4096],dtype="float32")
+        # self.abnormal_npy=np.zeros(shape=[self.abnormal_feature_num,4096],dtype="float32")
+        #
+        # for step, npy_path in enumerate(self.normal_feature_paths):
+        #     self.normal_npy[step]=np.load(npy_path)
+        #
+        # for step, npy_path in enumerate(self.abnormal_feature_paths):
+        #     self.abnormal_npy[step]=np.load(npy_path)
+
+        self.test_npy=np.zeros(shape=[self.test_feature_num,4096],dtype="float32")
+
+
+        for step, npy_path in enumerate(self.test_feature_paths):
+            self.test_npy[step]=np.load(npy_path)
+
+
+    def __getitem__(self, index):
+
+        # load one feature
+
+        feature,label,feature_type=self.load_feature_from_disk(self.test_feature_paths[index])
+
+        if self.mode in ["test"]:
+            video_name=self.test_feature_paths[index].split("\\")[-1].split(".")[0]
+            return feature,label,feature_type,video_name
+        return feature,label,feature_type
+
+
+
+    def get_class_and_video_name(self,path):
+        #
+        # video name
+        abnormal_class = path.split("\\")[-3]
+        video_name = path.split("\\")[-2]
+
+        return abnormal_class,video_name
+
+    def load_feature_from_disk(self, feature_path):
+        # laod feature from hard disk
+
+        label_dict={
+            "Normal":0,
+            "Abnormal":1
+        }
+
+        feature=np.load(feature_path) # [size,4096]
+
+        feature_type=feature_path.split("\\")[-2]
+
+        featuer_label=np.array([label_dict[feature_type]]*feature.shape[0])
+
+        tensor_feature=torch.from_numpy(feature)
+
+        tensor_label=torch.from_numpy(featuer_label)
+
+        return tensor_feature,tensor_label,feature_type
+
+
+    def numpy2tensor(self,np_array):
+
+        np_tensor=torch.from_numpy(np_array)
+        np_tensor=np_tensor.permute(2,0,1)
+
+        return np_tensor
+
+
+
+    def __len__(self):
+        return len(self.test_feature_paths) #len(self.normal_feature_paths) + len(self.abnormal_feature_paths)
+        # if self.mode in ["train"]:
+        #     return len(self.abnormal_feature_paths)
+        # elif self.mode in ["test"]:
+        #     return len(self.normal_feature_paths)+len(self.abnormal_feature_paths)
+        # else:
+        #     raise NotImplementedError(
+        #         "Not supported mode:{} in this dataset ".format(self.mode)
+        #     )
+
+
+
+if __name__=="__main__":
+    # args=parse_args()
+    # cfg=load_config(args)
+    # # print(type(cfg))
+    # cfg=None
+
+    data_loader=DataLoader(SH_SRF(mode="test",cfg=None),batch_size=1,shuffle=False)
+    #
+    for step ,(feature,label,feature_type,video_name) in enumerate(data_loader):
+        print("step",step)
+        print(feature.shape,label.shape)
+        print(type(feature_type))
+        print(feature_type,video_name)
+
+
+    print("")
