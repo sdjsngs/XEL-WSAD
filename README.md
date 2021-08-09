@@ -27,7 +27,7 @@ Cross-Epoch Learning for Weakly Supervised Anomaly Detection in Surveillance Vid
 The re-split for weakly supervised task is from [Graph convolutional label noise cleaner](https://arxiv.org/abs/1903.07256)
 
 ### UCF-Crime
-[UCF-Crime](https://webpages.uncc.edu/cchen62/dataset.html) [Paper](https://www.crcv.ucf.edu/projects/real-world/)
+[UCF-Crime](https://webpages.uncc.edu/cchen62/dataset.html)
 a large-scale complex dataset for anomaly detection. 
 It contains 13 real-world anomalous behaviors, distributed in 1,900 untrimmed videos with a total duration of 128 hours.
 
