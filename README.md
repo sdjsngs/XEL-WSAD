@@ -35,7 +35,7 @@ It contains 13 real-world anomalous behaviors, distributed in 1,900 untrimmed vi
 ## Getting Started
 ### step 1
 Please make the video data to feature data via [C3D](https://github.com/DavideA/c3d-pytorch) or [I3D](https://github.com/piergiaj/pytorch-i3d)
-we also release a simple implement for anomaly feature extractor [pagr](https://github.com/sdjsngs/Anomaly_faeture_extractor)
+we also release a simple implement for anomaly feature extractor [code page](https://github.com/sdjsngs/Anomaly_faeture_extractor)
 
 ### step 2 
 Before train the model, please check the hyper-parameter file in ./net/config/defaults.py and config/xxx.yaml 
